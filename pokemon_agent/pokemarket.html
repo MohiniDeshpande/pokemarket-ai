@@ -1,0 +1,387 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pokemarket — Pokémon Collection Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
+
+<style>
+  :root {
+    --ink: #0c0d12;
+    --ink-2: #13151c;
+    --panel: #181b24;
+    --panel-2: #1f2330;
+    --line: #2a2f3d;
+    --text: #e9ecf2;
+    --muted: #8b91a3;
+    --gold: #e8b84b;
+    --gold-soft: #f4d488;
+    --holo-1: #5ee0c8;
+    --holo-2: #b98cff;
+    --holo-3: #ff8fab;
+    --user: #2a2417;
+    --radius: 18px;
+    --font-display: "Bricolage Grotesque", serif;
+    --font-body: "Hanken Grotesk", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: var(--font-body);
+    color: var(--text);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(233,184,75,0.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(185,140,255,0.08), transparent 55%),
+      var(--ink);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  /* subtle film grain */
+  body::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; opacity: 0.035; z-index: 999;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  header {
+    flex: 0 0 auto;
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(12,13,18,0.7);
+    backdrop-filter: blur(14px);
+  }
+  .mark {
+    width: 38px; height: 38px; border-radius: 50%;
+    background:
+      linear-gradient(180deg, var(--holo-3), #d63b5c 49%, #11131a 49%, #0a0b10);
+    position: relative; flex: 0 0 auto;
+    box-shadow: 0 0 0 2px #0a0b10, 0 0 18px rgba(255,143,171,0.25);
+  }
+  .mark::after {
+    content: ""; position: absolute; inset: 0; margin: auto;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--ink); border: 3px solid #e9ecf2;
+  }
+  .brand h1 {
+    font-family: var(--font-display); font-weight: 800; letter-spacing: -0.5px;
+    font-size: 20px; margin: 0; line-height: 1;
+  }
+  .brand span { color: var(--muted); font-size: 12.5px; letter-spacing: 0.3px; }
+  .status {
+    margin-left: auto; display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--muted);
+    padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px;
+    background: var(--ink-2);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); transition: background .3s; }
+  .dot.ok { background: var(--holo-1); box-shadow: 0 0 10px var(--holo-1); }
+  .dot.err { background: #ff6b6b; box-shadow: 0 0 10px #ff6b6b; }
+
+  main {
+    flex: 1 1 auto; overflow-y: auto; scroll-behavior: smooth;
+    padding: 28px 18px 8px;
+  }
+  .thread { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+
+  /* empty / welcome state */
+  .welcome { text-align: center; padding: 8vh 12px 4vh; animation: rise .6s ease both; }
+  .welcome .glyph { font-size: 40px; }
+  .welcome h2 {
+    font-family: var(--font-display); font-weight: 700; font-size: 30px;
+    letter-spacing: -0.8px; margin: 14px 0 6px;
+    background: linear-gradient(90deg, var(--gold-soft), var(--gold));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .welcome p { color: var(--muted); max-width: 440px; margin: 0 auto; line-height: 1.55; }
+
+  .msg { display: flex; gap: 12px; align-items: flex-start; animation: rise .4s ease both; }
+  .msg.user { flex-direction: row-reverse; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%; flex: 0 0 auto; margin-top: 2px;
+    display: grid; place-items: center; font-size: 15px;
+    background: var(--panel-2); border: 1px solid var(--line);
+  }
+  .msg.agent .avatar {
+    background: conic-gradient(from 180deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-1));
+    color: #0a0b10;
+  }
+  .bubble {
+    padding: 14px 16px; border-radius: var(--radius); max-width: 86%;
+    line-height: 1.6; font-size: 15px; border: 1px solid var(--line);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+  }
+  .msg.user .bubble {
+    background: linear-gradient(180deg, #2a2417, #221d12);
+    border-color: #3a3320; border-bottom-right-radius: 6px;
+  }
+  .msg.agent .bubble {
+    background: linear-gradient(180deg, var(--panel), var(--ink-2));
+    border-bottom-left-radius: 6px;
+  }
+
+  /* markdown styling inside agent bubble */
+  .bubble :first-child { margin-top: 0; } .bubble :last-child { margin-bottom: 0; }
+  .bubble p { margin: 0 0 10px; }
+  .bubble strong { color: var(--gold-soft); }
+  .bubble code {
+    background: #0c0e14; border: 1px solid var(--line); padding: 1px 6px;
+    border-radius: 6px; font-size: 13px; color: var(--holo-1);
+  }
+  .bubble table {
+    width: 100%; border-collapse: collapse; margin: 6px 0 12px; font-size: 13.5px;
+    overflow: hidden; border-radius: 10px; border: 1px solid var(--line);
+  }
+  .bubble th {
+    text-align: left; background: var(--panel-2); color: var(--gold-soft);
+    padding: 8px 11px; font-weight: 600; border-bottom: 1px solid var(--line);
+  }
+  .bubble td { padding: 8px 11px; border-bottom: 1px solid var(--line); }
+  .bubble tr:last-child td { border-bottom: none; }
+  .bubble ul, .bubble ol { margin: 0 0 10px; padding-left: 20px; }
+
+  /* card images render as foil cards */
+  .bubble img {
+    width: 132px; border-radius: 10px; margin: 6px 8px 6px 0; vertical-align: top;
+    border: 1px solid var(--line); transition: transform .25s, box-shadow .25s;
+    background: var(--panel-2);
+  }
+  .bubble img:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.4),
+                0 0 0 2px transparent;
+    border-image: conic-gradient(from 0deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-1)) 1;
+  }
+
+  .tools {
+    font-size: 11.5px; color: var(--holo-1); margin-top: 8px; opacity: 0.85;
+    display: flex; gap: 6px; align-items: center;
+  }
+  .err-note { color: #ff9b9b; font-size: 13.5px; }
+  .err-note code { color: var(--gold-soft); }
+
+  /* thinking indicator */
+  .thinking .bubble { display: inline-flex; gap: 6px; align-items: center; }
+  .spin {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--gold), transparent 70%);
+    -webkit-mask: radial-gradient(circle 5px at center, transparent 98%, #000);
+    mask: radial-gradient(circle 5px at center, transparent 98%, #000);
+    animation: spin .8s linear infinite;
+  }
+
+  /* footer composer */
+  footer {
+    flex: 0 0 auto; padding: 12px 18px 18px;
+    border-top: 1px solid var(--line);
+    background: rgba(12,13,18,0.72); backdrop-filter: blur(14px);
+  }
+  .composer { max-width: 780px; margin: 0 auto; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .chip {
+    font-family: var(--font-body); font-size: 12.5px; color: var(--text);
+    background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
+    padding: 7px 13px; cursor: pointer; transition: all .18s; white-space: nowrap;
+  }
+  .chip:hover { border-color: var(--gold); color: var(--gold-soft); transform: translateY(-1px); }
+  .inputrow {
+    display: flex; gap: 10px; align-items: flex-end;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 8px 8px 8px 16px;
+  }
+  .inputrow:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(233,184,75,0.12); }
+  textarea {
+    flex: 1; background: transparent; border: none; outline: none; resize: none;
+    color: var(--text); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+    max-height: 140px; padding: 7px 0;
+  }
+  textarea::placeholder { color: var(--muted); }
+  .send {
+    flex: 0 0 auto; width: 42px; height: 42px; border-radius: 12px; border: none; cursor: pointer;
+    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+    color: #1a1505; font-size: 18px; display: grid; place-items: center;
+    transition: transform .15s, filter .15s;
+  }
+  .send:hover { transform: translateY(-1px); filter: brightness(1.05); }
+  .send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .hint { text-align: center; color: var(--muted); font-size: 11px; margin: 10px 0 0; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  main::-webkit-scrollbar { width: 10px; }
+  main::-webkit-scrollbar-thumb { background: var(--line); border-radius: 10px; border: 3px solid var(--ink); }
+</style>
+
+<header>
+  <div class="mark"></div>
+  <div class="brand">
+    <h1>Pokemarket</h1>
+    <span>Pokémon Collection Agent · powered by Gemini</span>
+  </div>
+  <div class="status"><span class="dot" id="dot"></span><span id="statusText">connecting…</span></div>
+</header>
+
+<main id="main">
+  <div class="thread" id="thread">
+    <div class="welcome" id="welcome">
+      <div class="glyph">🔮</div>
+      <h2>Your collection, in conversation.</h2>
+      <p>Ask about any card, add cards to your collection, or check what your portfolio is worth. The agent will pause for your approval before changing anything.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="composer">
+    <div class="chips" id="chips">
+      <button class="chip">📊 What's my collection worth?</button>
+      <button class="chip">🔝 Top 10 cards by HP</button>
+      <button class="chip">🃏 Show cards in Phantasmal flames</button>
+      <button class="chip">➕ Add a card to my collection</button>
+    </div>
+    <div class="inputrow">
+      <textarea id="input" rows="1" placeholder="Ask your collection agent…"></textarea>
+      <button class="send" id="send" title="Send">➤</button>
+    </div>
+    <p class="hint">Enter to send · Shift+Enter for a new line</p>
+  </div>
+</footer>
+
+<script>
+  // ============ CONFIG — edit these to match your setup ============
+  const API_BASE = "http://127.0.0.1:8000";  // where `adk api_server` runs
+  const APP_NAME = "pokemon_agent";           // your agent folder name
+  const USER_ID  = "Pokemarket";
+  // ================================================================
+
+  let sessionId = null;
+  const thread = document.getElementById("thread");
+  const main = document.getElementById("main");
+  const input = document.getElementById("input");
+  const sendBtn = document.getElementById("send");
+  const dot = document.getElementById("dot");
+  const statusText = document.getElementById("statusText");
+
+  // ---- connection check on load ----
+  fetch(`${API_BASE}/list-apps`)
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(() => { dot.classList.add("ok"); statusText.textContent = "connected"; })
+    .catch(() => { dot.classList.add("err"); statusText.textContent = "offline"; });
+
+  // ---- auto-grow textarea ----
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 140) + "px";
+  });
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
+  });
+  sendBtn.addEventListener("click", submit);
+  document.getElementById("chips").addEventListener("click", e => {
+    if (e.target.classList.contains("chip")) {
+      input.value = e.target.textContent.replace(/^[^\w]+\s*/, "");
+      submit();
+    }
+  });
+
+  function addMessage(role, htmlOrText, { isHtml = false } = {}) {
+    document.getElementById("welcome")?.remove();
+    const wrap = document.createElement("div");
+    wrap.className = `msg ${role}`;
+    const avatar = `<div class="avatar">${role === "user" ? "🧑" : "◑"}</div>`;
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    if (isHtml) bubble.innerHTML = htmlOrText; else bubble.textContent = htmlOrText;
+    wrap.innerHTML = avatar;
+    wrap.appendChild(bubble);
+    thread.appendChild(wrap);
+    main.scrollTop = main.scrollHeight;
+    return bubble;
+  }
+
+  function fixImages(container) {
+    // TCGdex image URLs often need a quality+extension suffix to resolve
+    container.querySelectorAll("img").forEach(img => {
+      const src = img.getAttribute("src") || "";
+      if (!/\.(png|jpe?g|webp|gif)$/i.test(src)) img.src = src.replace(/\/$/, "") + "/high.webp";
+      img.addEventListener("error", () => { img.style.display = "none"; }, { once: true });
+    });
+  }
+
+  async function ensureSession() {
+    if (sessionId) return sessionId;
+    const r = await fetch(`${API_BASE}/apps/${APP_NAME}/users/${USER_ID}/sessions`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: "{}"
+    });
+    if (!r.ok) throw new Error("session " + r.status);
+    sessionId = (await r.json()).id;
+    return sessionId;
+  }
+
+  function parseEvents(events) {
+    const texts = []; const tools = new Set();
+    for (const ev of (events || [])) {
+      const parts = ev?.content?.parts || [];
+      let chunk = "";
+      for (const p of parts) {
+        if (typeof p.text === "string" && p.text.trim()) chunk += p.text;
+        if (p.functionCall?.name) tools.add(p.functionCall.name);
+      }
+      if (chunk.trim()) texts.push(chunk.trim());
+    }
+    return { text: texts.join("\n\n").trim(), tools: [...tools] };
+  }
+
+  async function submit() {
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = ""; input.style.height = "auto";
+    addMessage("user", text);
+    sendBtn.disabled = true;
+
+    const thinking = document.createElement("div");
+    thinking.className = "msg agent thinking";
+    thinking.innerHTML = `<div class="avatar">◑</div><div class="bubble"><span class="spin"></span> thinking…</div>`;
+    thread.appendChild(thinking);
+    main.scrollTop = main.scrollHeight;
+
+    try {
+      await ensureSession();
+      const r = await fetch(`${API_BASE}/run`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          appName: APP_NAME, userId: USER_ID, sessionId,
+          newMessage: { role: "user", parts: [{ text }] }
+        })
+      });
+      thinking.remove();
+      if (!r.ok) throw new Error("run " + r.status);
+      const { text: reply, tools } = parseEvents(await r.json());
+
+      const clean = DOMPurify.sanitize(marked.parse(reply || "_(no response)_"));
+      const bubble = addMessage("agent", clean, { isHtml: true });
+      fixImages(bubble);
+      if (tools.length) {
+        const t = document.createElement("div");
+        t.className = "tools";
+        t.textContent = "⚡ used: " + tools.join(", ");
+        bubble.appendChild(t);
+      }
+      dot.classList.remove("err"); dot.classList.add("ok"); statusText.textContent = "connected";
+    } catch (err) {
+      thinking.remove();
+      dot.classList.remove("ok"); dot.classList.add("err"); statusText.textContent = "offline";
+      addMessage("agent",
+        `<div class="err-note"><strong>Couldn't reach the agent.</strong><br>
+         Make sure it's running with CORS allowed:<br>
+         <code>adk api_server --allow_origins="*" pokemon_agent</code><br>
+         and that this page's API_BASE matches its address.</div>`,
+        { isHtml: true });
+    } finally {
+      sendBtn.disabled = false; input.focus();
+    }
+  }
+</script>
