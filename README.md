@@ -4,7 +4,7 @@
 
 PokeMarket.ai goes beyond a chatbot: it *takes actions* on a real database. Ask it questions, add cards to your collection, look up live market prices, and track your portfolio's total value and gain/loss — and it always pauses for your approval before changing anything.
 
-Built for production and optimized for ultra-lean Cloud Run performance using direct Model Context Protocol execution.
+Built for production and optimised for ultra-lean Cloud Run performance using direct Model Context Protocol execution.
 
 
 ---
@@ -23,36 +23,19 @@ Built for production and optimized for ultra-lean Cloud Run performance using di
 
 ## 🏗️ Architecture
 
-+───────────────────────────────+
-|         Web Frontend          |
-| (pokemarket-ai-two.vercel.app)|
-+───────────────────────────────+
-│
-│ HTTP (POST /run)
-▼
-+───────────────────────────────+
-|        Cloud Run App          |
-|   ┌───────────────────────┐   |
-|   |   Python ADK Agent    |   |
-|   |    (Gemini Brain)     |   |
-|   └───────────┬───────────┘   |
-|               │               |
-|       ┌───────┴───────┐       |
-|       ▼               ▼       |
-| ┌───────────┐   ┌───────────┐ |
-| |  Node.js  |   |  Python   | |
-| |  MongoDB  |   |           | |
-| |   MCP     |   |price_tool | |
-| |  Subproc  |   |   (.py)   | |
-| └─────┬─────┘   └─────┬─────┘ |
-+───────┼───────────────┼───────+
-│               │
-▼               ▼
-+────────────────+ +────────────+
-| MongoDB Atlas  | | PokeTrace  |
-| (Cloud Hosted) | | Pricing API|
-+────────────────+ +────────────+
-
+┌─────────────┐     HTTP      ┌──────────────────┐
+│ Web Frontend │ ───────────▶ │  ADK Agent       │
+│ (pokemarket. │              │  (Gemini brain)  │
+│  html)       │ ◀─────────── │                  │
+└─────────────┘               └───────┬──────────┘
+                                       │ tools
+                          ┌────────────┴─────────────┐
+                          ▼                          ▼
+                  ┌────────────────┐        ┌─────────────────┐
+                  │ MongoDB MCP    │        │ get_price tool  │
+                  │ server →       │        │ (reads stored   │
+                  │ Atlas (on GCP) │        │  market price)  │
+                  └────────────────┘        └─────────────────┘
 
 - **Brain:** Gemini 2.5 Flash, served via **Google Cloud Vertex AI**
 - **Agent framework:** **ADK** (the development kit inside Google Cloud Agent Builder)
