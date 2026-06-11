@@ -252,7 +252,7 @@
 
 <script>
   // ============ CONFIG — edit these to match your setup ============
-  const API_BASE = "https://pokemarket-backend-363823229875.us-central1.run.app";  // where `adk api_server` runs
+  const API_BASE = "https://pokemarket-backend-363823229875.us-central1.run.app/";  // where `adk api_server` runs
   const APP_NAME = "pokemon_agent";           // your agent folder name
   const USER_ID  = "Pokemarket";
   // ================================================================
@@ -266,7 +266,7 @@
   const statusText = document.getElementById("statusText");
 
   // ---- connection check on load ----
-  fetch(`${API_BASE}/list-apps`)
+  fetch(`${API_BASE}list-apps`)
     .then(r => r.ok ? r.json() : Promise.reject())
     .then(() => { dot.classList.add("ok"); statusText.textContent = "connected"; })
     .catch(() => { dot.classList.add("err"); statusText.textContent = "offline"; });
