@@ -23,25 +23,35 @@ Built for production and optimized for ultra-lean Cloud Run performance using di
 
 ## 🏗️ Architecture
 
-┌──────────────┐      HTTP      ┌──────────────────┐
-│ Web Frontend │  ───────────▶  │   ADK Agent      │
-│   (Vercel)   │                │  (Gemini brain)  │
-│              │  ◀───────────  │                  │
-└──────────────┘                └───────┬──────────┘
-│ tools
-┌───────────┴─────────────┐
-▼                         ▼
-┌────────────────┐        ┌─────────────────┐
-│  Node.js v20   │        │     Python      │
-│  MongoDB MCP   │        │ price_tool.py │
-│ Server (Local) │        │ → PokeTrace API │
-└───────┬────────┘        └─────────────────┘
++───────────────────────────────+
+|         Web Frontend          |
+| (pokemarket-ai-two.vercel.app)|
++───────────────────────────────+
 │
+│ HTTP (POST /run)
 ▼
-┌────────────────┐
-│ MongoDB Atlas  │
-│ (Cloud hosted) │
-└────────────────┘
++───────────────────────────────+
+|        Cloud Run App          |
+|   ┌───────────────────────┐   |
+|   |   Python ADK Agent    |   |
+|   |    (Gemini Brain)     |   |
+|   └───────────┬───────────┘   |
+|               │               |
+|       ┌───────┴───────┐       |
+|       ▼               ▼       |
+| ┌───────────┐   ┌───────────┐ |
+| |  Node.js  |   |  Python   | |
+| |  MongoDB  |   |           | |
+| |   MCP     |   |price_tool | |
+| |  Subproc  |   |   (.py)   | |
+| └─────┬─────┘   └─────┬─────┘ |
++───────┼───────────────┼───────+
+│               │
+▼               ▼
++────────────────+ +────────────+
+| MongoDB Atlas  | | PokeTrace  |
+| (Cloud Hosted) | | Pricing API|
++────────────────+ +────────────+
 
 
 - **Brain:** Gemini 2.5 Flash, served via **Google Cloud Vertex AI**
