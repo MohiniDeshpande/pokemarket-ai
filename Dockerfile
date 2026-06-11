@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN npm install -g mongodb-mcp-server
 COPY . .
 EXPOSE 8080
-CMD  ["adk", "api_server", "--host", "0.0.0.0", "--port", "8080", "."]
+CMD  ["adk", "api_server", "--host", "0.0.0.0", "--port", "8080", "--allow_origins=*", "."]
