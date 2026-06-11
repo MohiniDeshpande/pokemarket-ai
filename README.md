@@ -6,9 +6,6 @@ PokeMarket.ai goes beyond a chatbot: it *takes actions* on a real database. Ask 
 
 Built for production and optimized for ultra-lean Cloud Run performance using direct Model Context Protocol execution.
 
-🎥 **Demo video:** _<add your video link here>_
-
-![PokeMarket.ai screenshot](screenshot.png)
 
 ---
 
