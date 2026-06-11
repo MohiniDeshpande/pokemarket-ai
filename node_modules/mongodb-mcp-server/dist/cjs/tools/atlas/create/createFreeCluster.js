@@ -1,0 +1,59 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CreateFreeClusterTool = void 0;
+const atlasTool_js_1 = require("../atlasTool.js");
+const accessListUtils_js_1 = require("../../../common/atlas/accessListUtils.js");
+const args_js_1 = require("../../args.js");
+class CreateFreeClusterTool extends atlasTool_js_1.AtlasToolBase {
+    constructor() {
+        super(...arguments);
+        this.description = "Create a free MongoDB Atlas cluster";
+        this.argsShape = {
+            projectId: args_js_1.AtlasArgs.projectId().describe("Atlas project ID to create the cluster in"),
+            name: args_js_1.AtlasArgs.clusterName().describe("Name of the cluster"),
+            region: args_js_1.AtlasArgs.region().describe("Region of the cluster").default("US_EAST_1"),
+        };
+    }
+    async execute({ projectId, name, region }) {
+        const input = {
+            groupId: projectId,
+            name,
+            clusterType: "REPLICASET",
+            replicationSpecs: [
+                {
+                    zoneName: "Zone 1",
+                    regionConfigs: [
+                        {
+                            providerName: "TENANT",
+                            backingProviderName: "AWS",
+                            regionName: region,
+                            electableSpecs: {
+                                instanceSize: "M0",
+                            },
+                        },
+                    ],
+                },
+            ],
+            terminationProtectionEnabled: false,
+        };
+        await (0, accessListUtils_js_1.ensureCurrentIpInAccessList)(this.apiClient, projectId);
+        await this.apiClient.createCluster({
+            params: {
+                path: {
+                    groupId: projectId,
+                },
+            },
+            body: input,
+        });
+        return {
+            content: [
+                { type: "text", text: `Cluster "${name}" has been created in region "${region}".` },
+                { type: "text", text: `Double check your access lists to enable your current IP.` },
+            ],
+        };
+    }
+}
+exports.CreateFreeClusterTool = CreateFreeClusterTool;
+CreateFreeClusterTool.toolName = "atlas-create-free-cluster";
+CreateFreeClusterTool.operationType = "create";
+//# sourceMappingURL=createFreeCluster.js.map

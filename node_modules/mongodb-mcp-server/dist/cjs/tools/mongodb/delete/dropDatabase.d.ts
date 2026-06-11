@@ -1,0 +1,24 @@
+import { MongoDBToolBase } from "../mongodbTool.js";
+import type { ToolArgs, OperationType, ToolResult } from "../../tool.js";
+import { z } from "zod";
+declare const DropDatabaseOutputSchema: {
+    database: z.ZodString;
+    dropped: z.ZodBoolean;
+};
+export type DropDatabaseOutput = z.infer<z.ZodObject<typeof DropDatabaseOutputSchema>>;
+export declare class DropDatabaseTool extends MongoDBToolBase {
+    static toolName: string;
+    description: string;
+    argsShape: {
+        database: z.ZodString;
+    };
+    outputSchema: {
+        database: z.ZodString;
+        dropped: z.ZodBoolean;
+    };
+    static operationType: OperationType;
+    protected execute({ database, }: ToolArgs<typeof this.argsShape>): Promise<ToolResult<typeof this.outputSchema>>;
+    protected getConfirmationMessage({ database }: ToolArgs<typeof this.argsShape>): string;
+}
+export {};
+//# sourceMappingURL=dropDatabase.d.ts.map
