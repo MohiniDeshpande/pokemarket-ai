@@ -44,7 +44,7 @@ Built for production and optimised for ultra-lean Cloud Run performance using di
 - **Pricing:** [PokeTrace API](https://poketrace.com) (optimized with variant and condition tracking)
 
 Two MongoDB collections in one `pokemon` database:
-- `cards` — the catalog (~23,000 cards, read-only)
+- `cards` — the catalog containing cards from latest 4 sets(Mega evolution, Ascended heroes,Phantasmal flames and perfect order)
 - `holdings` — the cards the user owns
 
 ---
@@ -122,11 +122,11 @@ Why these settings matter:
 ## 💬 Example prompts
 "How many cards are in the database?"
 
-"Show me cards in Darkness Ablaze with their numbers and types."
+"Show me cards in Mega evolution with their numbers and types."
 
-"Add 2 of Darkness Ablaze 020, near-mint." (agent asks the price, then pauses for approval)
+"Add 2 of pikachu ex 277 from ascended heroes, near-mint." (agent asks the price, then pauses for approval)
 
-"What's Charizard ex worth?"
+"What's Mega Lucario ex worth?"
 
 "What's my collection worth?"
 
