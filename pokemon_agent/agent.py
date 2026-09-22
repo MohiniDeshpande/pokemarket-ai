@@ -52,7 +52,7 @@ from google.adk.tools.mcp_tool.mcp_session_manager import StdioConnectionParams
 from mcp import StdioServerParameters
 
 # get_price lives in pokemon_agent/price_tool.py (created earlier).
-from .price_tool import get_price
+from .price_tool import get_price, get_prices_batch
 
 load_dotenv()
 CONNECTION_STRING = os.environ["MDB_MCP_CONNECTION_STRING"]
@@ -161,12 +161,13 @@ root_agent = Agent(
     tools=[
         # Tool 1: live price lookup 
         get_price,
+        get_prices_batch,
 
         # Tool 2: MongoDB access via the MongoDB MCP server
         McpToolset(
             connection_params=StdioConnectionParams(
                 server_params=StdioServerParameters(
-                    command="npm",
+                    command="npx",
                     args=["-y", "mongodb-mcp-server"],   # add "--readOnly" only for read-only testing
                     env={"MDB_MCP_CONNECTION_STRING": CONNECTION_STRING},
                 ),

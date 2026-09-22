@@ -14,6 +14,8 @@ it pick the EXACT card when several share a name (e.g. Mega Lucario ex #160 vs #
 """
 
 import os
+from concurrent.futures import ThreadPoolExecutor
+
 import requests
 from dotenv import load_dotenv
 
@@ -98,6 +100,29 @@ def get_price(card_name: str, set_name: str = "", number: str = "") -> dict:
         "rarity": card.get("rarity"),
         **price,
     }
+
+
+def get_prices_batch(card_names: list[str]) -> dict:
+    """Get current market prices for many Pokémon cards at once.
+
+    Use this for portfolio / collection totals instead of calling get_price in a loop.
+    Lookups run concurrently so large collections don't hit gateway timeouts.
+
+    Args:
+        card_names: List of card names, e.g. ["Mega Lucario ex", "Charizard"].
+                    Duplicates are looked up only once.
+
+    Returns:
+        Dict mapping each card name to its get_price result (price fields, or an
+        'error' key if that card could not be priced).
+    """
+    unique_names = list(dict.fromkeys(n for n in card_names if n))
+    if not unique_names:
+        return {}
+
+    with ThreadPoolExecutor(max_workers=min(8, len(unique_names))) as pool:
+        results = pool.map(get_price, unique_names)
+    return dict(zip(unique_names, results))
 
 
 if __name__ == "__main__":

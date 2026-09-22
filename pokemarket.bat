@@ -30,7 +30,7 @@ start "PokeMarket Web" cmd /k "python -m http.server 5500"
 REM --- 6. Open the app in the browser ---
 timeout /t 2 /nobreak >nul
 echo Opening PokeMarket.ai...
-start "" "http://127.0.0.1:5500/pokemon_agent/pokemarket.html"
+start "" "http://127.0.0.1:5500/frontend/index.html"
 
 echo.
 echo ============================================================
