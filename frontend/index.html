@@ -350,7 +350,7 @@
 
     try {
       await ensureSession();
-      const r = await fetch(`${API_BASE}/run`, {
+      const r = await fetch(`${API_BASE}run`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           app_name: APP_NAME,
@@ -377,7 +377,7 @@
       thinking.remove();
       dot.classList.remove("ok"); dot.classList.add("err"); statusText.textContent = "offline";
       addMessage("agent",
-        `<div class="err-note"><strong>Couldn't reach the agent.</strong><br>
+        `<div class="err-note"><strong>Couldn't reach the agent</strong> (${DOMPurify.sanitize(err.message)}).<br>
          Make sure it's running with CORS allowed:<br>
          <code>adk api_server --allow_origins="*" pokemon_agent</code><br>
          and that this page's API_BASE matches its address.</div>`,
