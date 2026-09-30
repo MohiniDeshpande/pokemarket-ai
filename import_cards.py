@@ -1,10 +1,10 @@
 """
-import_sets.py
+import_cards.py
 Imports specific Pokémon TCG sets from TCGdex into MongoDB with FULL detail:
 set name, card number, rarity, types, HP, and image.
 
 Run from the project root with your venv active:
-    python import_sets.py
+    python import_cards.py
 """
 
 import os

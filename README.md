@@ -53,7 +53,7 @@ Two optimized MongoDB collections are hosted inside the `pokemon` database:
 **1. Clone the repository and configure the environment**
 
 git clone <your-repo-url>
-cd pokemon-agent
+cd pokemarket-ai
 python -m venv venv
 source venv/bin/activate       # Mac/Linux; Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -95,7 +95,7 @@ gcloud run deploy pokemarket-backend `
   --cpu 1 `
   --memory 1Gi `
   --allow-unauthenticated `
-  --update-env-vars GOOGLE_GENAI_USE_VERTEXAI=TRUE,MDB_MCP_CONNECTION_STRING="your_mongodb_uri",POKETRACE_API_KEY="your_poketrace_key"
+  --update-env-vars GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT="your-project-id",GOOGLE_CLOUD_LOCATION=us-central1,MDB_MCP_CONNECTION_STRING="your_mongodb_uri",POKETRACE_API_KEY="your_poketrace_key"
 
 
 ## 💡 Optimization Insight: Setting --min-instances 1 keeps the container pre-warmed, keeping your Node.js subprocesses and database handshakes fully alive to eliminate cold-start latency.
@@ -125,7 +125,7 @@ gcloud run deploy pokemarket-backend \
   --memory=2Gi \
   --no-cpu-throttling \
   --min-instances=1 \
-  --set-env-vars "MDB_MCP_CONNECTION_STRING=mongodb+srv://USER:PASS@cluster.xxxx.mongodb.net/?appName=Clustercards,GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=pokemarket-499016,GOOGLE_CLOUD_LOCATION=us-central1"
+  --set-env-vars "MDB_MCP_CONNECTION_STRING=mongodb+srv://USER:PASS@cluster.xxxx.mongodb.net/?appName=Clustercards,GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=pokemarket-499016,GOOGLE_CLOUD_LOCATION=us-central1,POKETRACE_API_KEY=your_poketrace_key"
   
 Why these settings matter:
 --cpu=2 & --memory=2Gi: Prevents runtime starvation during concurrent Python ADK schema building and Node engine execution loops.

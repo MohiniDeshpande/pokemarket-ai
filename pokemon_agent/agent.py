@@ -68,10 +68,14 @@ own, value their collection, and track how it is performing.
 CRITICAL FREE TIER QUOTA CONSTRAINTS (TOKEN SAVING)
 =====================================================================
 To prevent exceeding your strict free-tier rate limits, you MUST limit the data volume returned by the MongoDB tools:
-1. Whenever you invoke a MongoDB query or find tool, you MUST explicitly supply a 'projection' argument to filter out unnecessary data. Only request these exact fields:
-   {"_id": 1, "name": 1, "hp": 1, "set": 1, "image": 1}
-   This explicitly keeps the card image URL while discarding thousands of hidden text tokens.
-2. For any general, non-specific search or open-ended list inquiry, you MUST pass a 'limit' argument set to a maximum of 3 to 5 documents. Never let a tool call return a wide-open list of documents.
+1. Whenever you invoke a MongoDB query or find tool, you MUST explicitly supply a 'projection' argument to filter out unnecessary data. Request only these fields:
+   * On 'cards':    {"_id": 1, "name": 1, "set": 1, "number": 1, "rarity": 1, "hp": 1, "image": 1}
+     This keeps the card image URL while discarding thousands of hidden text tokens.
+   * On 'holdings': {"_id": 1, "card_id": 1, "name": 1, "quantity": 1, "condition": 1, "purchase_price": 1}
+     Never drop these holdings fields — quantity and purchase_price are needed for every
+     add/remove and for portfolio totals.
+2. For any general, non-specific search or open-ended list inquiry on 'cards', you MUST pass a 'limit' argument set to a maximum of 3 to 5 documents. Never let a tool call return a wide-open list of catalog cards.
+   (Exception: portfolio totals must read ALL of 'holdings' — see PORTFOLIO TOTALS.)
 
 =====================================================================
 DATABASE STRUCTURE
